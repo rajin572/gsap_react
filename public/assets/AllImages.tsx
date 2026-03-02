@@ -2,24 +2,27 @@ import logo from "./logo/logo.png";
 import logo2 from "./logo/logo2.png";
 import dummyCover from "./images/defaultCover.png";
 import dummyProfile from "./images/dummyProfile.jpg";
-import bannerImg from "./images/bannerImg.png";
-import bannerMockup from "./images/bannerMockup.png";
-import exploreMockup from "./images/exploreMockup.png";
-import bookingMockup from "./images/bookingMockup.png";
-import manageBusinessMockup from "./images/manageBusinessMockup.png";
-import createDealsMockup from "./images/createDealsMockup.png";
-import mobileOnHand from "./images/mobileOnHand.png";
-import becomeADealr from "./images/becomeADealr.png";
 
-import slider1 from "./images/slider1.jpg";
-import slider2 from "./images/slider2.png";
-import slider3 from "./images/slider3.png";
-import slider4 from "./images/slider4.png";
-import slider5 from "./images/slider5.jpg";
-import slider6 from "./images/slider6.jpg";
-import slider7 from "./images/slider7.jpg";
-
-import pattern from "./images/pattern.png";
+import image1 from "./images/image1.png";
+import image2 from "./images/image2.png";
+import image3 from "./images/image3.png";
+import image4 from "./images/image4.png";
+import image5 from "./images/image5.png";
+import image6 from "./images/image6.png";
+import image7 from "./images/image7.png";
+import image8 from "./images/image8.png";
+import image9 from "./images/image9.png";
+import image10 from "./images/image10.png";
+import image11 from "./images/image11.png";
+import image12 from "./images/image12.png";
+import image13 from "./images/image13.png";
+import image14 from "./images/image14.png";
+import image15 from "./images/image15.png";
+import image16 from "./images/image16.png";
+import image17 from "./images/image17.png";
+import image18 from "./images/image18.png";
+import image19 from "./images/image19.png";
+import image20 from "./images/image20.png";
 
 import playstore from "./icons/playstore.png";
 import appleStore from "./icons/appleStore.png";
@@ -30,24 +33,27 @@ export const AllImages = {
   logo2,
   dummyProfile,
   dummyCover,
-  bannerImg,
-  bannerMockup,
-  exploreMockup,
-  bookingMockup,
-  manageBusinessMockup,
-  createDealsMockup,
-  mobileOnHand,
-  becomeADealr,
 
-  slider1,
-  slider2,
-  slider3,
-  slider4,
-  slider5,
-  slider6,
-  slider7,
-
-  pattern,
+  image1,
+  image2,
+  image3,
+  image4,
+  image5,
+  image6,
+  image7,
+  image8,
+  image9,
+  image10,
+  image11,
+  image12,
+  image13,
+  image14,
+  image15,
+  image16,
+  image17,
+  image18,
+  image19,
+  image20,
 };
 
 export const AllIcons = {

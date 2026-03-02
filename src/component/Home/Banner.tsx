@@ -15,6 +15,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollSmoother } from "gsap/ScrollSmoother";
 import { useSmoother } from "../ui/animation/SmoothScroller";
+import Image from "next/image";
 
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 
@@ -78,7 +79,7 @@ export default function Banner() {
             {/* Slower than scroll speed */}
             <div
                 data-speed="clamp(0.5)"
-                className="absolute left-1/4 top-[400px] w-24 h-24 bg-pink-400 rounded-xl flex items-center justify-center text-white font-bold"
+                className="absolute left-1/4 top-100 w-24 h-24 bg-pink-400 rounded-xl flex items-center justify-center text-white font-bold"
             >
                 0.5×
             </div>
@@ -86,23 +87,23 @@ export default function Banner() {
             {/* Slightly slower */}
             <div
                 data-speed="clamp(0.8)"
-                className="absolute left-1/2 -translate-x-1/2 top-[900px] w-24 h-24 bg-purple-500 rounded-xl flex items-center justify-center text-white font-bold"
+                className="absolute left-1/2 -translate-x-1/2 top-225 w-24 h-24 bg-purple-500 rounded-xl flex items-center justify-center text-white font-bold"
             >
                 0.8×
             </div>
 
             {/* Faster than scroll speed — flies upward */}
-            <img
+            <Image
                 data-speed="1.5"
                 src="https://assets.codepen.io/16327/2D-keyframe-2.png"
                 alt="parallax shape"
-                className="absolute left-1/2 -translate-x-1/2 top-[1300px] w-24 h-24"
+                className="absolute left-1/2 -translate-x-1/2 top-325 w-24 h-24"
             />
 
             {/* ── Lagging element ────────────────────────────────────────── */}
             <div
                 data-lag="0.4"
-                className="absolute right-16 top-[700px] w-20 h-20 bg-cyan-400 rounded-full flex items-center justify-center text-white text-xs text-center"
+                className="absolute right-16 top-175 w-20 h-20 bg-cyan-400 rounded-full flex items-center justify-center text-white text-xs text-center"
             >
                 lag 0.4s
             </div>
