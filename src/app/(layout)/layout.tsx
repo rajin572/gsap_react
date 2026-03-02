@@ -1,4 +1,3 @@
-import Navbar from "@/component/shared/Navbar";
 import CustomCursor from "@/component/ui/animation/CustomCursor";
 import SmoothScroller from "@/component/ui/animation/SmoothScroller";
 import React from "react";
@@ -8,9 +7,9 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div>
             <CustomCursor />
 
-            <div className="fixed top-0 w-full z-100!">
+            {/* <div className="fixed top-0 w-full z-100!">
                 <Navbar />
-            </div>
+            </div> */}
             <SmoothScroller smooth={2.5} effects={true}>
                 <div>
                     {children}

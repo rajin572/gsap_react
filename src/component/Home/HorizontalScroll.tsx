@@ -40,8 +40,9 @@ const HorizontalScroll = () => {
         <div
             ref={containerRef}
             id="page3"
+            className="bg-red-500 overflow-hidden p-12 h-screen"
         >
-            <h1 ref={h1Ref}>
+            <h1 className="whitespace-nowrap m-0 uppercase text-[40vw]" ref={h1Ref}>
                 Animation
             </h1>
         </div>

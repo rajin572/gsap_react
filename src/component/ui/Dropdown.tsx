@@ -38,7 +38,7 @@ const Dropdown: FC<DropdownProps> = ({
     const hoverTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Close on outside click (only relevant for click trigger)
-    useOutsideClick(wrapperRef, useCallback(() => setOpen(false), []));
+    useOutsideClick(wrapperRef as React.RefObject<HTMLElement>, useCallback(() => setOpen(false), []));
 
     // GSAP animation whenever `open` changes
     useGSAP(
@@ -112,7 +112,7 @@ const Dropdown: FC<DropdownProps> = ({
             <div
                 ref={menuRef}
                 style={{ visibility: "hidden", pointerEvents: "none" }}
-                className={`absolute top-full mt-2 ${placementClass[placement]} min-w-32.5 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-[99999]`}
+                className={`absolute top-full mt-2 ${placementClass[placement]} min-w-32.5 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-99999`}
             >
                 {items.map((item) => (
                     <div
