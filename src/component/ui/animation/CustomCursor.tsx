@@ -7,127 +7,129 @@ import { useGSAP } from "@gsap/react";
 gsap.registerPlugin(useGSAP);
 
 /**
- * CustomCursor
+ * CustomCursor — modern two-layer GSAP cursor
  *
- * A two-layer GSAP-powered cursor:
- *  - dot      : snaps exactly to the pointer (no lag)
- *  - ring     : follows with a smooth lag for a trailing effect
+ *  - dot   : accent-colored, snaps instantly, glows
+ *  - ring  : smooth spring follow via gsap.quickTo
  *
- * Hover states (add these data attributes to any element):
- *  data-cursor="hover"    → ring expands + blends, dot hides
- *  data-cursor="text"     → ring turns into a thin text-select bar
- *  data-cursor="drag"     → ring stretches wide (drag affordance)
- *  data-cursor="hide"     → both layers invisible (e.g. over inputs)
- *
- * Usage:
- *   // In layout.tsx, render once outside <SmoothScroller>:
- *   <CustomCursor />
- *
- *   // In any component:
- *   <button data-cursor="hover">Click me</button>
- *   <p data-cursor="text">Some copy</p>
+ * Hover states (data attributes on any element):
+ *  data-cursor="hover"          → ring expands with accent glow, dot hides
+ *  data-cursor="view"           → ring becomes large pill with label text
+ *  data-cursor="view" data-cursor-label="OPEN"  → custom label
+ *  data-cursor="text"           → thin text-cursor bar
+ *  data-cursor="drag"           → wide pill (drag affordance)
+ *  data-cursor="hide"           → both layers invisible
  */
 
-type CursorState = "default" | "hover" | "text" | "drag" | "hide";
+type CursorState = "default" | "hover" | "view" | "text" | "drag" | "hide";
 
-const RING_LAG = 0.12; // seconds — how far behind the ring trails
+const ACCENT = "#0ae448";
 
 const CustomCursor = () => {
-    const dotRef = useRef<HTMLDivElement>(null);
+    const dotRef  = useRef<HTMLDivElement>(null);
     const ringRef = useRef<HTMLDivElement>(null);
-    // Track raw mouse position without triggering re-renders
-    const pos = useRef({ x: -100, y: -100 });
+    const labelRef = useRef<HTMLSpanElement>(null);
     const state = useRef<CursorState>("default");
 
     useLayoutEffect(() => {
-        // Hide the native cursor globally
         document.documentElement.style.cursor = "none";
         return () => { document.documentElement.style.cursor = ""; };
     }, []);
 
     useGSAP(() => {
-        const dot = dotRef.current!;
-        const ring = ringRef.current!;
+        const dot   = dotRef.current!;
+        const ring  = ringRef.current!;
+        const label = labelRef.current!;
 
-        // ── Dot: instant snap ──────────────────────────────────────────
+        // ── Ring: smooth spring follow via quickTo ─────────────────────
+        const xTo = gsap.quickTo(ring, "x", { duration: 0.55, ease: "power3" });
+        const yTo = gsap.quickTo(ring, "y", { duration: 0.55, ease: "power3" });
+
         const moveDot = (e: MouseEvent) => {
-            pos.current = { x: e.clientX, y: e.clientY };
             gsap.set(dot, { x: e.clientX, y: e.clientY });
+            xTo(e.clientX);
+            yTo(e.clientY);
         };
 
-        // ── Ring: lagged follow using gsap.ticker ──────────────────────
-        // We store the ring's "current" position and lerp it toward mouse
-        const ringPos = { x: -100, y: -100 };
-
-        const tick = () => {
-            ringPos.x += (pos.current.x - ringPos.x) * (1 - Math.pow(1 - (1 / (RING_LAG * 60)), 1));
-            ringPos.y += (pos.current.y - ringPos.y) * (1 - Math.pow(1 - (1 / (RING_LAG * 60)), 1));
-            gsap.set(ring, { x: ringPos.x, y: ringPos.y });
-        };
-
-        gsap.ticker.add(tick);
-
-        // ── State helpers ──────────────────────────────────────────────
-        const applyState = (next: CursorState) => {
+        // ── State machine ──────────────────────────────────────────────
+        const applyState = (next: CursorState, labelText = "VIEW") => {
             if (state.current === next) return;
             state.current = next;
 
-            // Reset to defaults first, then override
+            // Reset defaults
             gsap.to(ring, {
-                width: 36,
-                height: 36,
-                borderWidth: 1.5,
-                borderColor: "rgba(255,255,255,0.7)",
-                backgroundColor: "transparent",
-                mixBlendMode: "normal",
+                width: 36, height: 36,
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.45)",
+                backgroundColor: "rgba(255,255,255,0)",
+                boxShadow: "none",
+                borderRadius: "50%",
                 opacity: 1,
-                scaleX: 1,
-                scaleY: 1,
-                duration: 0.3,
-                ease: "power2.out",
+                duration: 0.35,
+                ease: "power3.out",
                 overwrite: true,
             });
             gsap.to(dot, {
-                width: 6,
-                height: 6,
+                width: 6, height: 6,
+                backgroundColor: ACCENT,
                 opacity: 1,
-                duration: 0.2,
-                ease: "power2.out",
+                scale: 1,
+                duration: 0.25,
+                ease: "power3.out",
                 overwrite: true,
             });
+            gsap.to(label, { opacity: 0, scale: 0.8, duration: 0.15, overwrite: true });
 
             switch (next) {
                 case "hover":
                     gsap.to(ring, {
-                        width: 56,
-                        height: 56,
-                        borderColor: "rgba(255,255,255,0)",
-                        backgroundColor: "rgba(255,255,255,0.12)",
-                        mixBlendMode: "difference",
+                        width: 52, height: 52,
+                        borderColor: "rgba(10,228,72,0.5)",
+                        backgroundColor: "rgba(10,228,72,0.1)",
+                        boxShadow: "0 0 18px 0 rgba(10,228,72,0.25)",
                         duration: 0.35,
+                        ease: "power3.out",
+                    });
+                    gsap.to(dot, { opacity: 0, scale: 0, duration: 0.2 });
+                    break;
+
+                case "view":
+                    if (label.textContent !== labelText) label.textContent = labelText;
+                    gsap.to(ring, {
+                        width: 80, height: 80,
+                        borderWidth: 1,
+                        borderColor: "rgba(255,255,255,0.6)",
+                        backgroundColor: "rgba(0,0,0,0.55)",
+                        boxShadow: "0 0 0 0 transparent",
+                        duration: 0.4,
+                        ease: "back.out(1.4)",
+                    });
+                    gsap.to(dot, { opacity: 0, scale: 0, duration: 0.15 });
+                    gsap.to(label, {
+                        opacity: 1, scale: 1,
+                        duration: 0.25,
+                        delay: 0.1,
                         ease: "power2.out",
                     });
-                    gsap.to(dot, { opacity: 0, width: 0, height: 0, duration: 0.2 });
                     break;
 
                 case "text":
                     gsap.to(ring, {
-                        width: 3,
-                        height: 44,
+                        width: 2, height: 42,
                         borderWidth: 0,
-                        backgroundColor: "rgba(255,255,255,0.9)",
+                        backgroundColor: "rgba(255,255,255,0.85)",
                         borderRadius: 2,
                         duration: 0.25,
-                        ease: "power2.out",
+                        ease: "power3.out",
                     });
-                    gsap.to(dot, { opacity: 0, duration: 0.15 });
+                    gsap.to(dot, { opacity: 0, scale: 0, duration: 0.15 });
                     break;
 
                 case "drag":
                     gsap.to(ring, {
-                        width: 72,
-                        height: 28,
-                        borderColor: "rgba(255,255,255,0.9)",
+                        width: 70, height: 26,
+                        borderColor: "rgba(255,255,255,0.75)",
+                        borderRadius: 20,
                         duration: 0.3,
                         ease: "back.out(1.5)",
                     });
@@ -139,28 +141,39 @@ const CustomCursor = () => {
             }
         };
 
-        // ── Event delegation via data-cursor ──────────────────────────
+        // ── Event delegation ───────────────────────────────────────────
         const onEnter = (e: MouseEvent) => {
             const target = (e.target as HTMLElement).closest("[data-cursor]") as HTMLElement | null;
-            applyState((target?.dataset.cursor as CursorState) ?? "default");
+            const cursorType = (target?.dataset.cursor as CursorState) ?? "default";
+            const cursorLabel = target?.dataset.cursorLabel ?? "VIEW";
+            applyState(cursorType, cursorLabel);
         };
 
         const onLeave = (e: MouseEvent) => {
-            const to = e.relatedTarget as HTMLElement | null;
-            if (!to?.closest("[data-cursor]")) applyState("default");
+            if (!(e.relatedTarget as HTMLElement | null)?.closest("[data-cursor]")) {
+                applyState("default");
+            }
         };
 
-        // Click pulse on dot
+        // ── Click ripple: ring pulses outward ──────────────────────────
         const onClick = () => {
-            gsap.fromTo(dot,
-                { scale: 1 },
-                {
-                    scale: 2.5, opacity: 0, duration: 0.4, ease: "power2.out",
-                    onComplete: () => {
-                        gsap.set(dot, { scale: 1, opacity: state.current === "hover" ? 0 : 1 });
-                    }
-                }
-            );
+            gsap.to(ring, {
+                scale: 1.6,
+                opacity: 0,
+                duration: 0.45,
+                ease: "power2.out",
+                overwrite: false,
+                onComplete: () => {
+                    gsap.set(ring, { scale: 1, opacity: 1 });
+                },
+            });
+            if (state.current !== "hover" && state.current !== "view") {
+                gsap.fromTo(dot,
+                    { scale: 1 },
+                    { scale: 2, opacity: 0, duration: 0.35, ease: "power2.out",
+                      onComplete: () => gsap.set(dot, { scale: 1, opacity: 1 }) }
+                );
+            }
         };
 
         window.addEventListener("mousemove", moveDot);
@@ -169,28 +182,26 @@ const CustomCursor = () => {
         window.addEventListener("click", onClick);
 
         return () => {
-            gsap.ticker.remove(tick);
             window.removeEventListener("mousemove", moveDot);
             document.removeEventListener("mouseover", onEnter);
             document.removeEventListener("mouseout", onLeave);
             window.removeEventListener("click", onClick);
         };
-    }, { scope: ringRef });
+    });
 
     return (
         <>
-            {/* ── Dot ─────────────────────────────────────────────────── */}
+            {/* ── Dot ─────────────────────────────────────────── */}
             <div
                 ref={dotRef}
                 aria-hidden
                 style={{
                     position: "fixed",
-                    top: 0,
-                    left: 0,
-                    width: 6,
-                    height: 6,
+                    top: 0, left: 0,
+                    width: 6, height: 6,
                     borderRadius: "50%",
-                    backgroundColor: "#fff",
+                    backgroundColor: ACCENT,
+                    boxShadow: `0 0 10px 2px ${ACCENT}`,
                     pointerEvents: "none",
                     zIndex: 999999,
                     transform: "translate(-50%, -50%)",
@@ -198,25 +209,44 @@ const CustomCursor = () => {
                 }}
             />
 
-            {/* ── Ring ─────────────────────────────────────────────────── */}
+            {/* ── Ring ─────────────────────────────────────────── */}
             <div
                 ref={ringRef}
                 aria-hidden
                 style={{
                     position: "fixed",
-                    top: 0,
-                    left: 0,
-                    width: 36,
-                    height: 36,
+                    top: 0, left: 0,
+                    width: 36, height: 36,
                     borderRadius: "50%",
-                    border: "1.5px solid rgba(255,255,255,0.7)",
+                    border: "1px solid rgba(255,255,255,0.45)",
                     backgroundColor: "transparent",
                     pointerEvents: "none",
                     zIndex: 999998,
                     transform: "translate(-50%, -50%)",
                     willChange: "transform",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                 }}
-            />
+            >
+                <span
+                    ref={labelRef}
+                    aria-hidden
+                    style={{
+                        opacity: 0,
+                        color: "#fff",
+                        fontSize: 10,
+                        fontWeight: 600,
+                        letterSpacing: "0.1em",
+                        textTransform: "uppercase",
+                        whiteSpace: "nowrap",
+                        userSelect: "none",
+                        fontFamily: "var(--font-geist-mono, monospace)",
+                    }}
+                >
+                    VIEW
+                </span>
+            </div>
         </>
     );
 };
