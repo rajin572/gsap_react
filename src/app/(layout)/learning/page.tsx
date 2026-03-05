@@ -3,6 +3,7 @@ import LearningGsapTo from '@/component/Learning/LearningGsapTo';
 import LearningGsapFrom from '@/component/Learning/LearningGsapFrom';
 import LearningGsapFromTo from '@/component/Learning/LearningGsapFromTo';
 import LearningGsapSet from '@/component/Learning/LearningGsapSet';
+import LearningAnimatableProperties from '@/component/Learning/LearningAnimatableProperties';
 
 const page = () => {
     return (
@@ -12,6 +13,7 @@ const page = () => {
             <LearningGsapFrom />
             <LearningGsapFromTo />
             <LearningGsapSet />
+            <LearningAnimatableProperties />
         </div>
     );
 };
