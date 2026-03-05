@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import Container from "../ui/Container";
@@ -213,7 +213,7 @@ gsap.to(".card", {
         >
             <div ref={containerRef} className="flex flex-col gap-3">
                 <div className="bg-zinc-900 rounded-xl h-28 flex items-center justify-center" style={{ perspective: "800px" }}>
-                    <div className="t3d w-20 h-14 rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center text-white font-mono text-[10px] font-bold shadow-lg">3D CARD</div>
+                    <div className="t3d w-20 h-14 rounded-xl bg-linear-to-br from-violet-500 to-purple-700 flex items-center justify-center text-white font-mono text-[10px] font-bold shadow-lg">3D CARD</div>
                 </div>
                 <p className="text-[10px] font-mono text-zinc-600 text-center">active: <span className="text-secondary">{active}</span></p>
                 <div className="flex flex-wrap gap-1.5">
@@ -553,7 +553,7 @@ gsap.to(".glass", { backdropFilter: "blur(20px) brightness(1.1)" });`}
         >
             <div ref={containerRef} className="flex flex-col gap-3">
                 <div className="bg-zinc-900 rounded-xl h-24 flex items-center justify-center overflow-hidden">
-                    <div className="flt w-24 h-14 rounded-xl bg-gradient-to-br from-pink-500 via-orange-400 to-yellow-400 flex items-center justify-center text-white font-mono text-[10px] font-bold">FILTER</div>
+                    <div className="flt w-24 h-14 rounded-xl bg-linear-to-br from-pink-500 via-orange-400 to-yellow-400 flex items-center justify-center text-white font-mono text-[10px] font-bold">FILTER</div>
                 </div>
                 <p className="text-[10px] font-mono text-zinc-600 text-center">active: <span className="text-secondary">{active}</span></p>
                 <div className="flex flex-wrap gap-1.5">
@@ -663,7 +663,7 @@ gsap.fromTo(".el",
         >
             <div ref={containerRef} className="flex flex-col gap-3">
                 <div className="bg-zinc-900 rounded-xl h-24 flex items-center justify-center">
-                    <div className="clip w-36 h-14 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-500 flex items-center justify-center text-white font-mono text-[10px] font-bold">CLIP PATH</div>
+                    <div className="clip w-36 h-14 rounded-xl bg-linear-to-r from-emerald-400 to-teal-500 flex items-center justify-center text-white font-mono text-[10px] font-bold">CLIP PATH</div>
                 </div>
                 <p className="text-[10px] font-mono text-zinc-600 text-center">active: <span className="text-secondary">{active}</span></p>
                 <div className="flex flex-wrap gap-1.5">
@@ -903,25 +903,31 @@ gsap.to("path", { strokeLinejoin: "round" });`}
 const SVGAttrDrawDemo = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const pathRef = useRef<SVGPathElement>(null);
+    const pathLenRef = useRef(0);
     const { contextSafe } = useGSAP({ scope: containerRef });
     const [active, setActive] = useState("—");
 
-    const playDraw = contextSafe(() => {
-        if (!pathRef.current) return;
-        const len = pathRef.current.getTotalLength();
+    useEffect(() => {
+        if (pathRef.current) {
+            const len = pathRef.current.getTotalLength();
+            pathLenRef.current = len;
+            gsap.set(pathRef.current, { strokeDasharray: len, strokeDashoffset: len });
+        }
+    }, []);
+
+    const playDraw = () => {
+        const len = pathLenRef.current;
         gsap.fromTo(".draw-path",
             { strokeDasharray: len, strokeDashoffset: len },
             { strokeDashoffset: 0, duration: 1.5, ease: "power2.inOut" }
         );
         setActive("strokeDashoffset draw");
-    });
+    };
 
-    const playErase = contextSafe(() => {
-        if (!pathRef.current) return;
-        const len = pathRef.current.getTotalLength();
-        gsap.to(".draw-path", { strokeDashoffset: len, duration: 1, ease: "power2.in" });
+    const playErase = () => {
+        gsap.to(".draw-path", { strokeDashoffset: pathLenRef.current, duration: 1, ease: "power2.in" });
         setActive("strokeDashoffset erase");
-    });
+    };
 
     const playAttr = contextSafe(() => {
         gsap.killTweensOf(".attr-circle");
@@ -945,15 +951,14 @@ const SVGAttrDrawDemo = () => {
         setActive("attr: { x, y, width, height }");
     });
 
-    const reset = contextSafe(() => {
-        if (!pathRef.current) return;
-        const len = pathRef.current.getTotalLength();
+    const reset = () => {
+        const len = pathLenRef.current;
         gsap.killTweensOf([".draw-path", ".attr-circle", ".attr-rect"]);
         gsap.set(".draw-path", { strokeDasharray: len, strokeDashoffset: len });
         gsap.set(".attr-circle", { attr: { cx: 30, cy: 35, r: 10 } });
         gsap.set(".attr-rect", { attr: { x: 10, y: 45, width: 20, height: 20 } });
         setActive("—");
-    });
+    };
 
     return (
         <DemoCard
@@ -1317,7 +1322,7 @@ const SpecialConfigDemo = () => {
     const [active, setActive] = useState("—");
     const tweenRef = useRef<gsap.core.Tween | null>(null);
 
-    const playPaused = contextSafe(() => {
+    const playPaused = () => {
         gsap.set(".cfg-box", { clearProps: "all", x: 0 });
         tweenRef.current = gsap.to(".cfg-box", {
             x: 160,
@@ -1326,7 +1331,7 @@ const SpecialConfigDemo = () => {
             paused: true,
         });
         setActive("paused: true (tween created but not playing)");
-    });
+    };
 
     const playTween = () => {
         tweenRef.current?.play();
@@ -1364,12 +1369,12 @@ const SpecialConfigDemo = () => {
         setActive("delay: 0.8s");
     });
 
-    const reset = contextSafe(() => {
+    const reset = () => {
         tweenRef.current?.kill();
         gsap.killTweensOf(".cfg-box");
         gsap.set(".cfg-box", { clearProps: "all" });
         setActive("—");
-    });
+    };
 
     return (
         <DemoCard
@@ -1724,7 +1729,7 @@ gsap.to(".heading",  { opacity: 1, onComplete: () =>
                 <div className="bg-zinc-900 rounded-xl h-14 flex items-center px-4 overflow-hidden">
                     <div className="cb-box w-10 h-10 rounded-lg bg-amber-500 flex items-center justify-center text-white font-mono text-[9px] font-bold shrink-0">CB</div>
                 </div>
-                <div className="bg-zinc-950 border border-zinc-700/40 rounded-xl p-3 min-h-[80px] font-mono text-[11px] flex flex-col gap-0.5">
+                <div className="bg-zinc-950 border border-zinc-700/40 rounded-xl p-3 min-h-20 font-mono text-[11px] flex flex-col gap-0.5">
                     {log.length === 0 ? (
                         <span className="text-zinc-600">— run an animation to see callbacks fire —</span>
                     ) : (
