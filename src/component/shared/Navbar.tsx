@@ -20,8 +20,9 @@ const Navbar = () => {
     const navWrapperRef = useRef<HTMLDivElement>(null);
 
     const NavItems: any = [
-        // { id: "1", name: "Home", route: "/" },
-        // { id: "2", name: "Learning", route: "/learning" },
+        { id: "1", name: "Home", route: "/" },
+        { id: "1", name: "Projects", route: "/project" },
+        { id: "2", name: "Learning", route: "/learning" },
     ];
 
 

@@ -1,4 +1,4 @@
-import ProjectGridScaleAnimation from "@/component/Home/Projects/ProjectGridScaleAnimation";
+import ProjectGridScaleAnimation from "@/component/ui/animation/components/ProjectGridScaleAnimation";
 
 const page = () => {
   return (

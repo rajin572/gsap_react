@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { projectsData } from "../../../../public/data/projects";
+import { projectsData } from "../../../../../public/data/projects";
 import Image from "next/image";
 import gsap from "gsap";
 
