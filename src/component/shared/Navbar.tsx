@@ -119,7 +119,7 @@ const Navbar = () => {
                         <div className="hidden lg:block">
                             <ul className="flex justify-center items-center gap-8">
                                 {NavItems.map((navItem: any, i: number) => (
-                                    <li
+                                    <li data-cursor="hide"
                                         key={i}
                                         className={`cursor-pointer text-lg hover:text-secondary transition-colors duration-300 ${path === navItem.route
                                             ? "text-secondary font-bold underline underline-offset-4"
@@ -140,7 +140,7 @@ const Navbar = () => {
                         >
                             <ul className="flex justify-end items-center gap-5 flex-col py-5 mt-16">
                                 {NavItems.map((navItem: any, i: number) => (
-                                    <li
+                                    <li data-cursor="hide"
                                         key={i}
                                         onClick={() => setMobileMenuOpen(false)}
                                         className={`cursor-pointer hover:text-secondary transition-colors duration-300 ${path === navItem.route
@@ -152,7 +152,7 @@ const Navbar = () => {
                                     </li>
                                 ))}
                                 <li>
-                                    <Link
+                                    <Link data-cursor="hide"
                                         onClick={() => setMobileMenuOpen(false)}
                                         href="/learning"
                                         className="px-3 py-1 rounded-full border-2 border-secondary bg-secondary text-background font-semibold"
@@ -166,7 +166,7 @@ const Navbar = () => {
 
                     {/* Desktop right actions */}
                     <div className="hidden lg:flex items-center gap-3">
-                        <Link
+                        <Link data-cursor="hide"
                             href="/learning"
                             className="px-3 py-1 rounded-full border-2 border-secondary bg-secondary text-background font-semibold transition-colors duration-200"
                         >

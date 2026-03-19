@@ -6,7 +6,7 @@ import Link from "next/link";
 import gsap from "gsap";
 import { IProject } from "@/data/projectsData";
 
-const ROTATION_RANGE = 18;
+const ROTATION_RANGE = 5;
 
 const TiltCard = ({ project }: { project: IProject }) => {
     const cardRef = useRef<HTMLDivElement>(null);

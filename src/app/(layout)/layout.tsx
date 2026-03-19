@@ -1,12 +1,12 @@
 import Navbar from "@/component/shared/Navbar";
-import CustomCursor from "@/component/ui/animation/CustomCursor";
+import DaynamicCursor from "@/component/ui/animation/DaynamicCursor";
 import SmoothScroller from "@/component/ui/animation/SmoothScroller";
 import React from "react";
 
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     return (
         <div>
-            <CustomCursor />
+            <DaynamicCursor />
 
             <div className="fixed top-0 w-full z-100!">
                 <Navbar />
