@@ -8,6 +8,7 @@ const componentMap: Record<string, React.ComponentType> = {
     "expanding-gallery": dynamic(() => import("../ui/animation/components/ProjectExpandingGallery")),
     "grid-scale": dynamic(() => import("../ui/animation/components/ProjectGridScaleAnimation")),
     "tilt-card": dynamic(() => import("../ui/animation/components/TiltCardDemo")),
+    "animated-marquee": dynamic(() => import("../ui/animation/components/AnimatedMarqueeDemo")),
 };
 
 type Tab = "demo" | "code" | "theory";

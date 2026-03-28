@@ -3,6 +3,7 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { useRef } from "react";
+import CircularBadge from "./CircleBadge";
 
 const colors = [
     "bg-rose-500",
@@ -19,6 +20,7 @@ const colors = [
 
 const Practice = () => {
     const containerRef = useRef<HTMLDivElement>(null);
+    const textRingRef = useRef<SVGSVGElement>(null);
 
     useGSAP(() => {
         gsap.from(containerRef.current!.children, {
@@ -28,10 +30,20 @@ const Practice = () => {
             ease: "power3.out",
             stagger: 0.51,
         });
+
+        // Continuously rotate the text ring
+        gsap.to(textRingRef.current, {
+            rotation: 360,
+            duration: 8,
+            ease: "none",
+            repeat: -1,
+            transformOrigin: "center center",
+        });
     }, { scope: containerRef });
 
     return (
         <div>
+            {/* <CircularBadge /> */}
             <div className="max-w-3xl mx-auto py-40 ">
 
                 <p data-cursor="textview" className="text-4xl leading-tight hyphens-auto">
@@ -55,7 +67,7 @@ const Practice = () => {
                 {Array?.from({ length: 3 })?.map((_, index) => (
                     <div
                         data-cursor="view-card"
-                        data-cursor-label={`Card ${index + 1}`}
+                        data-cursor-label={`Card ${index + 4}`}
                         className={`w-full h-40 rounded-3xl ${colors[index % colors.length]}`}
                         key={index}
                     ></div>

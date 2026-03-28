@@ -486,6 +486,72 @@ const tiltCardTheory: IProjectTheory = {
     ],
 };
 
+// ─── Project 4 ────────────────────────────────────────────────────────────────
+
+const animatedMarqueeCode = `"use client";
+import ParallaxMarquee from "./AnimatedMarque";
+
+const row1 = ["/assets/images/image1.png", "/assets/images/image2.png", ...];
+
+const AnimatedMarqueeDemo = () => (
+    <div className="w-full py-10 space-y-8">
+        {/* Auto-play stacked rows */}
+        <ParallaxMarquee items={row1} direction={1} baseVelocity={3} gap={16} />
+        <ParallaxMarquee items={row1} direction={-1} baseVelocity={3} gap={16} />
+
+        {/* Scroll-driven with reverse */}
+        <ParallaxMarquee items={row1} direction={1} baseVelocity={5} gap={16}
+            playMode="scroll" scrollReverse />
+
+        {/* Hover-pause + draggable */}
+        <ParallaxMarquee items={row1} direction={-1} baseVelocity={2.5} gap={16}
+            playMode="hover-pause" draggable itemWidth={240} />
+
+        {/* Ribbon — no loop, scroll-driven */}
+        <ParallaxMarquee items={row1} direction={1} baseVelocity={3} gap={16}
+            variant="ribbon" playMode="scroll" opacity={0.5} itemWidth={180} />
+    </div>
+);
+
+export default AnimatedMarqueeDemo;`;
+
+const animatedMarqueeTheory: IProjectTheory = {
+    overview:
+        "The Animated Marquee is a fully configurable infinite-scroll strip built with GSAP's requestAnimationFrame loop. It supports multiple play modes, scroll-driven direction reversal, drag-to-scrub with momentum, and a ribbon variant that clamps instead of wrapping.",
+    steps: [
+        {
+            title: "1. RAF loop instead of GSAP tweens",
+            content:
+                "A `requestAnimationFrame` loop runs every frame. It reads the elapsed `delta` time (ms since last frame) and advances `xRef.current` by `direction × velocity × (delta / 1000) × 60`. Multiplying by `(delta/1000)×60` normalises speed to be frame-rate independent — the marquee moves identically at 30 fps and 144 fps.",
+        },
+        {
+            title: "2. Modulo wrap for infinite scrolling",
+            content:
+                "`wrap(val, totalWidth)` applies `((val % total) + total) % total - total` to keep `x` in the range `[-totalWidth, 0]`. When the strip slides fully off to the left, it jumps back to the start. Three copies of the items list are rendered so the jump is always hidden off-screen.",
+        },
+        {
+            title: "3. Play modes via refs (no re-renders)",
+            content:
+                "`hoverPaused`, `scrollActive`, and `isDragging` are all `useRef` booleans. The `isPlaying()` function reads them synchronously inside the RAF loop without triggering React re-renders. This keeps animation at full performance — React state changes would force reconciliation every frame.",
+        },
+        {
+            title: "4. Scroll-driven direction with scrollReverse",
+            content:
+                "A `wheel` listener updates `scrollDir.current`: `deltaY > 0` uses the defined `direction`; `deltaY < 0` flips it. The `scrollReverse` prop gates this flip — when `false`, the direction stays fixed regardless of scroll. In `scroll` playMode, a 300 ms timeout pauses the marquee after scrolling stops, giving a natural momentum feel.",
+        },
+        {
+            title: "5. Drag with momentum (inertia)",
+            content:
+                "On `mousedown`, `dragStartMotionX` captures the current `x`. On `mousemove`, `x` is set to `wrap(dragStart + dx)` so the strip follows the cursor exactly. On release `isDragging` is cleared but `dragVelocity` (last frame delta) is left intact. The RAF loop decays it by `× 0.92` each frame until it falls below 0.5 px — this is the momentum / inertia.",
+        },
+        {
+            title: "6. itemWidth, gap, opacity, variant props",
+            content:
+                "`itemWidth` and `gap` control the stride (`itemWidth + gap`) used in both layout and the wrap calculation. `opacity` is applied to the outer wrapper via inline style. `variant='ribbon'` replaces the wrap formula with `Math.min / Math.max` clamping so the strip stops at its natural ends instead of looping.",
+        },
+    ],
+};
+
 // ─── Exported data ─────────────────────────────────────────────────────────────
 
 export const projectsData: IProject[] = [
@@ -533,6 +599,21 @@ export const projectsData: IProject[] = [
         component: "tilt-card",
         code: tiltCardCode,
         theory: tiltCardTheory,
+    },
+    {
+        id: 4,
+        slug: "animated-marquee",
+        title: "Animated Marquee",
+        description:
+            "A configurable infinite marquee strip with scroll-driven direction, drag-to-scrub inertia, hover-pause, and a ribbon variant.",
+        longDescription:
+            "Built from scratch using a GSAP-powered requestAnimationFrame loop with no ScrollTrigger plugin. Supports four play modes — always-on, scroll-driven, hover-pause, and draggable — that can be combined freely. Scroll-up automatically reverses direction (opt-out via scrollReverse={false}). itemWidth, gap, and opacity are fully prop-controlled. A ribbon variant clamps instead of wrapping for a non-looping scroll-reveal feel.",
+        thumbnail: "/assets/images/image1.png",
+        tags: ["GSAP", "React", "RAF Loop", "Scroll-driven", "Drag & Inertia"],
+        year: 2025,
+        component: "animated-marquee",
+        code: animatedMarqueeCode,
+        theory: animatedMarqueeTheory,
     },
 ];
 

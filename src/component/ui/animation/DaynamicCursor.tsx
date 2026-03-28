@@ -1,131 +1,195 @@
 "use client";
-import gsap from 'gsap';
-import { useEffect, useRef, useState } from 'react';
+import gsap from "gsap";
+import { useEffect, useRef } from "react";
+import CircularBadge from "@/component/Home/CircleBadge";
 
 const DaynamicCursor = () => {
     const cursorRef = useRef<HTMLDivElement>(null);
+    const dotRef = useRef<HTMLDivElement>(null);
     const labelRef = useRef<HTMLParagraphElement>(null);
-    const [cursorLabel, setCursorLabel] = useState("");
-    const [blendMode, setBlendMode] = useState(false);
+    const badgeRef = useRef<HTMLDivElement>(null);
 
-    const onHover = (e: MouseEvent) => {
-        const target = (e.target as HTMLElement).closest("[data-cursor]") as HTMLElement | null;
-        if (!target) return;
+    // useRef instead of state (no re-render)
+    const activeTarget = useRef<HTMLElement | null>(null);
+    const lastMouse = useRef({ x: 0, y: 0 });
 
-        const type = target.dataset.cursor;
-        const label = target.dataset.cursorLabel ?? "";
-
-        if (type === "textview") {
-            setBlendMode(true);
-            gsap.to(cursorRef.current, {
-                scale: 10,
-                duration: 0.5,
-                ease: "power3",
-            });
+    const setLabel = (text: string) => {
+        if (labelRef.current) {
+            labelRef.current.innerText = text;
         }
-        else if (type === "view-card") {
-            setCursorLabel(label);
-            gsap.to(cursorRef.current, {
-                scale: 5,
-                duration: 0.5,
-                ease: "power3",
-            });
-            gsap.to(labelRef.current, { fontWeight: 600, scale: 0.25, opacity: 1, duration: 0, ease: "power3" });
-
-        }
-        else if (type === "hide") {
-            gsap.to(cursorRef.current, { opacity: 0, duration: 0.2 });
-
-        } else if (type === "link") {
-            gsap.to(cursorRef.current, {
-                border: "  1px solid rgba(255, 255, 255, 0.5)",
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
-                scale: 6,
-                duration: 0,
-                ease: "power3",
-            });
-        }
-        //  else if (type === "view") {
-        //     // Mask + label text
-        //     setCursorLabel(label);
-        //     gsap.to(cursorWrapperRef.current, {
-        //         clipPath: "circle(50% at 50% 50%)",
-        //         duration:0,
-        //         ease: "power3.out",
-        //     });
-        //     gsap.to(".dc-label", { opacity: 1, duration: 0.25, delay: 0.2 });
-        // } else if (type === "hide") {
-        //     gsap.to(cursorRef.current, { opacity: 0, duration: 0.2 });
-        // }
     };
 
-    const onHoverLeave = (e: MouseEvent) => {
-        const target = (e.target as HTMLElement).closest("[data-cursor]") as HTMLElement | null;
-        if (!target) return;
+    const setBlend = (enabled: boolean) => {
+        if (!cursorRef.current) return;
+        cursorRef.current.classList.toggle("mix-blend-difference", enabled);
+    };
 
-        const type = target.dataset.cursor;
+    const handleHover = (target: HTMLElement) => {
+        if (!cursorRef.current) return;
 
-        if (type === "textview") {
-            setBlendMode(false);
-            gsap.to(cursorRef.current, {
-                scale: 1,
-                duration: 0.4,
-                ease: "power3",
-            });
-        } else if (type === "view-card") {
-            setCursorLabel("");
-            gsap.to(labelRef.current, { opacity: 0, scale: 0, duration: 0 });
-            gsap.to(cursorRef.current, {
-                scale: 1,
-                duration: 0.4,
-                ease: "power3",
-            });
-        } else if (type === "hide") {
-            gsap.to(cursorRef.current, { opacity: 1, duration: 0.2 });
-        } else if (type === "link") {
-            gsap.to(cursorRef.current, {
-                borderColor: "  0px solid rgba(255, 255, 255, 0)",
-                backgroundColor: "rgba(255, 255, 255)",
-                scale: 1,
-                duration: 0,
-                ease: "power3",
-            });
+        const type = target?.dataset?.cursor || "";
+        const label = target?.dataset?.cursorLabel || "";
+
+        activeTarget.current = target;
+
+        switch (type) {
+            case "textview":
+                setBlend(true);
+                gsap.to(cursorRef.current, { scale: 10, duration: 0.5, ease: "power3", overwrite: "auto" });
+                break;
+
+            case "view-card":
+                setLabel(label);
+                gsap.to(cursorRef.current, { scale: 5, duration: 0.5, ease: "power3", overwrite: "auto" });
+                gsap.to(labelRef.current, { opacity: 1, scale: 0.25, duration: 0 });
+                break;
+
+            case "hide":
+                gsap.to(cursorRef.current, { opacity: 0, duration: 0.2, overwrite: "auto" });
+                break;
+
+            case "link":
+                gsap.to(cursorRef.current, {
+                    borderColor: "rgba(255,255,255,0.5)",
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                    scale: 6,
+                    duration: 0,
+                    overwrite: "auto",
+                });
+                break;
+
+            case "animated_circle":
+                gsap.to(dotRef.current, { opacity: 0, scale: 0, duration: 0.2, overwrite: "auto" });
+                gsap.to(badgeRef.current, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.7)", overwrite: "auto" });
+                break;
+
+            default:
+                break;
         }
+    };
+
+    const resetCursor = () => {
+        if (!cursorRef.current) return;
+
+        const type = activeTarget.current?.dataset?.cursor || "";
+
+        switch (type) {
+            case "textview":
+                setBlend(false);
+                break;
+
+            case "view-card":
+                setLabel("");
+                gsap.to(labelRef.current, { opacity: 0, scale: 0, duration: 0 });
+                break;
+
+            case "hide":
+                gsap.to(cursorRef.current, { opacity: 1, duration: 0.2 });
+                break;
+
+            case "link":
+                gsap.to(cursorRef.current, {
+                    borderColor: "transparent",
+                    backgroundColor: "rgba(255,255,255,1)",
+                    scale: 1,
+                    duration: 0,
+                });
+                break;
+
+            case "animated_circle":
+                gsap.to(badgeRef.current, { opacity: 0, scale: 0, duration: 0.2, overwrite: "auto" });
+                gsap.to(dotRef.current, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.7)", overwrite: "auto" });
+                return; // skip the generic scale reset below
+        }
+
+        gsap.to(cursorRef.current, { scale: 1, duration: 0.4, ease: "power3", overwrite: "auto" });
+        activeTarget.current = null;
     };
 
     useEffect(() => {
+        if (!cursorRef.current) return;
+
         gsap.set(cursorRef.current, { xPercent: -50, yPercent: -50 });
+        gsap.set(badgeRef.current, { xPercent: -50, yPercent: -50, opacity: 0, scale: 0 });
 
         const xTo = gsap.quickTo(cursorRef.current, "x", { duration: 0.2, ease: "power3" });
         const yTo = gsap.quickTo(cursorRef.current, "y", { duration: 0.2, ease: "power3" });
 
-        const onMove = (e: MouseEvent) => {
+        const badgeXTo = gsap.quickTo(badgeRef.current, "x", { duration: 0.2, ease: "power3" });
+        const badgeYTo = gsap.quickTo(badgeRef.current, "y", { duration: 0.2, ease: "power3" });
+
+        // Mouse move
+        const onMove = (e: PointerEvent) => {
+            lastMouse.current = { x: e.clientX, y: e.clientY };
             xTo(e.clientX);
             yTo(e.clientY);
+            badgeXTo(e.clientX);
+            badgeYTo(e.clientY);
         };
 
-        window.addEventListener("mousemove", onMove);
-        window.addEventListener("mouseover", onHover);
-        window.addEventListener("mouseout", onHoverLeave);
+        // Pointer over
+        const onPointerOver = (e: PointerEvent) => {
+            const target = (e.target as HTMLElement)?.closest("[data-cursor]") as HTMLElement | null;
+            if (!target) return;
+            handleHover(target);
+        };
 
+        // Pointer out
+        const onPointerOut = (e: PointerEvent) => {
+            const target = (e.target as HTMLElement)?.closest("[data-cursor]") as HTMLElement | null;
+            if (!target) return;
+            resetCursor();
+        };
+
+        // Optimized scroll check
+        let ticking = false;
+        const onScroll = () => {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(() => {
+                const el = document.elementFromPoint(lastMouse.current.x, lastMouse.current.y) as HTMLElement | null;
+                const newTarget = el?.closest("[data-cursor]") as HTMLElement | null;
+                if (!newTarget && activeTarget.current) resetCursor();
+                ticking = false;
+            });
+        };
+
+        window.addEventListener("pointermove", onMove);
+        document.addEventListener("pointerover", onPointerOver);
+        document.addEventListener("pointerout", onPointerOut);
+        window.addEventListener("scroll", onScroll, true);
 
         return () => {
-            window.removeEventListener("mousemove", onMove);
-            window.removeEventListener("mouseover", onHover);
-            window.removeEventListener("mouseout", onHoverLeave);
+            window.removeEventListener("pointermove", onMove);
+            document.removeEventListener("pointerover", onPointerOver);
+            document.removeEventListener("pointerout", onPointerOut);
+            window.removeEventListener("scroll", onScroll, true);
         };
-    });
+    }, []);
 
     return (
-        <div
-            ref={cursorRef}
-            className={`fixed top-0 left-0 size-3.5 rounded-full bg-white pointer-events-none z-9999 flex items-center justify-center ${blendMode ? "mix-blend-difference" : ""}`}
-        >
-            <p ref={labelRef} className="dc-label opacity-0 text-xs px-3 leading-snug select-none whitespace-nowrap text-black">
-                {cursorLabel}
-            </p>
+        <>
+            {/* Default dot cursor */}
+            <div
+                ref={cursorRef}
+                className="fixed top-0 left-0 size-3.5 rounded-full bg-white pointer-events-none z-9999 flex items-center justify-center"
+            >
+                <div ref={dotRef} className="size-full rounded-full bg-white flex items-center justify-center">
+                    <p
+                        ref={labelRef}
+                        className="opacity-0 text-xs px-3 leading-snug whitespace-nowrap text-black"
+                    />
+                </div>
+            </div>
 
-        </div>
+            {/* CircleBadge cursor — shown on animated_circle hover */}
+            <div
+                ref={badgeRef}
+                className="fixed top-0 left-0 pointer-events-none z-9999"
+            >
+                <CircularBadge />
+            </div>
+        </>
     );
 };
 

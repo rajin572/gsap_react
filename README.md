@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+"use client";
 
-## Getting Started
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { useRef } from "react";
 
-First, run the development server:
+const CircularBadge = () => {
+const svgRef = useRef<SVGSVGElement>(null);
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+    useGSAP(() => {
+        gsap.to(svgRef.current, {
+            rotation: 360,
+            duration: 20,
+            ease: "none",
+            repeat: -1,
+            transformOrigin: "center center",
+        });
+    });
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+    // Circle radius for text path
+    const r = 62;
+    // Circumference = 2π × r ≈ 389.6px
+    const circumference = Math.round(2 * Math.PI * r);
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+    return (
+        <div className="h-screen flex items-center justify-center">
+            <div className="relative" style={{ width: 160, height: 160 }}>
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+                {/* Rotating SVG ring */}
+                <svg ref={svgRef} viewBox="0 0 160 160" width="160" height="160">
+                    <defs>
+                        {/* Full clockwise circle starting at 12 o'clock */}
+                        <path
+                            id="badge-ring"
+                            d={`M80,${80 - r} a${r},${r} 0 1,1 0,${r * 2} a${r},${r} 0 1,1 0,-${r * 2}`}
+                        />
+                    </defs>
 
-## Learn More
+                    {/* Dark background */}
+                    <circle cx="80" cy="80" r="78" fill="rgba(20,20,24,0.92)" />
 
-To learn more about Next.js, take a look at the following resources:
+                    {/* Subtle lime border */}
+                    <circle cx="80" cy="80" r="77" fill="none" stroke="rgba(200,245,60,0.25)" strokeWidth="1" />
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+                    {/* Text — textLength forces exact fill of circumference, no overflow */}
+                    <text fill="#c8f53c" fontSize="10" fontWeight="700" letterSpacing="20px" fontFamily="monospace">
+                        <textPath href="#badge-ring" textLength={circumference} lengthAdjust="spacing">
+                            GET EDITED NOW • START YOUR FREE TRIAL •
+                        </textPath>
+                    </text>
+                    <circle cx="80" cy="80" r="50" fill="none" stroke="rgba(200,245,60,0.25)" strokeWidth="1" />
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+                </svg>
 
-## Deploy on Vercel
+                {/* Glowing center dot — stays fixed while ring rotates */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div
+                        className="size-12 rounded-full flex items-center justify-center text-black font-bold text-lg"
+                        style={{
+                            backgroundColor: "#c8f53c",
+                            // boxShadow: "0 0 20px 8px #c8f53c99, 0 0 60px 20px #c8f53c44",
+                        }}
+                    >
+                        →
+                    </div>
+                </div>
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+            </div>
+        </div>
+    );
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+};
+
+export default CircularBadge;
