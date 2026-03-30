@@ -40,8 +40,8 @@ const DaynamicCursor = () => {
 
             case "view-card":
                 setLabel(label);
-                gsap.to(cursorRef.current, { scale: 5, duration: 0.5, ease: "power3", overwrite: "auto" });
-                gsap.to(labelRef.current, { opacity: 1, scale: 0.25, duration: 0 });
+                gsap.to(cursorRef.current, { scale: 7, duration: 0.5, ease: "power3", overwrite: "auto" });
+                gsap.to(labelRef.current, { opacity: 1, scale: 0.15, duration: 0 });
                 break;
 
             case "hide":
@@ -59,7 +59,7 @@ const DaynamicCursor = () => {
                 break;
 
             case "animated_circle":
-                gsap.to(dotRef.current, { opacity: 0, scale: 0, duration: 0.2, overwrite: "auto" });
+                gsap.to(dotRef.current, { opacity: 0, scale: 0, duration: 0, overwrite: "auto" });
                 gsap.to(badgeRef.current, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.7)", overwrite: "auto" });
                 break;
 
@@ -165,6 +165,7 @@ const DaynamicCursor = () => {
             document.removeEventListener("pointerout", onPointerOut);
             window.removeEventListener("scroll", onScroll, true);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

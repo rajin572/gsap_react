@@ -3,7 +3,6 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { useRef } from "react";
-import CircularBadge from "./CircleBadge";
 
 const colors = [
     "bg-rose-500",

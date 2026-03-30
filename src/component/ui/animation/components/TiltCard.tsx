@@ -79,6 +79,8 @@ const TiltCard = ({ project }: { project: IProject }) => {
                         fill
                         sizes="(max-width: 768px) 100vw, 50vw"
                         className="object-cover"
+                        fetchPriority="high"
+                        priority
                     />
                     {/* Year badge — most elevated */}
                     <span

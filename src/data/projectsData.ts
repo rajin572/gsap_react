@@ -552,6 +552,286 @@ const animatedMarqueeTheory: IProjectTheory = {
     ],
 };
 
+// ─── Project 5 ────────────────────────────────────────────────────────────────
+
+const testimonialMarqueeCode = `"use client";
+import gsap from "gsap";
+import { useEffect, useRef } from "react";
+
+export type Testimonial = {
+    name: string;
+    handle: string;
+    quote: string;
+    gradient?: string;
+};
+
+const GRADIENTS = [
+    "linear-gradient(135deg,#a8edea,#fed6e3)",
+    "linear-gradient(135deg,#667eea,#764ba2)",
+    "linear-gradient(135deg,#f6d365,#fda085)",
+    "linear-gradient(135deg,#84fab0,#8fd3f4)",
+    "linear-gradient(135deg,#a18cd1,#fbc2eb)",
+    "linear-gradient(135deg,#fccb90,#d57eeb)",
+    "linear-gradient(135deg,#43e97b,#38f9d7)",
+    "linear-gradient(135deg,#fa709a,#fee140)",
+];
+
+const wrapV = (val, total) => ((val % total) + total) % total - total;
+
+const TestimonialCard = ({ item, width, height, gradientIndex }) => (
+    <div className="bg-white rounded-2xl p-4 shadow-sm border border-black/5 shrink-0 overflow-hidden" style={{ width, height }}>
+        <div className="flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 rounded-full shrink-0"
+                style={{ background: item.gradient ?? GRADIENTS[gradientIndex % GRADIENTS.length] }} />
+            <div>
+                <p className="font-semibold text-sm text-gray-900 leading-tight">{item.name}</p>
+                <p className="text-xs text-gray-400">{item.handle}</p>
+            </div>
+        </div>
+        <p className="text-sm text-gray-600 leading-relaxed line-clamp-4">{item.quote}</p>
+    </div>
+);
+
+const TestimonialMarquee = ({
+    items, columns = 3, direction = "up", baseVelocity = 1,
+    is3D = false, gap = 16, cardHeight = 180, cardWidth = 280,
+    columnGap = 16, height = 520, pauseOnHover = false, columnSpeeds,
+}) => {
+    const cols = Array.from({ length: columns }, (_, ci) => items.filter((_, i) => i % columns === ci));
+    const trackRefs = useRef([]);
+    const yRefs = useRef(Array(columns).fill(0));
+    const isPaused = useRef(false);
+    const rafRef = useRef(null);
+    const lastTimeRef = useRef(null);
+
+    useEffect(() => {
+        const stride = cardHeight + gap;
+        const sign = direction === "up" ? -1 : 1;
+        const localCols = Array.from({ length: columns }, (_, ci) => items.filter((_, i) => i % columns === ci));
+
+        localCols.forEach((col, ci) => {
+            const total = col.length * stride;
+            if (total) yRefs.current[ci] = wrapV(-(ci * stride * 1.5), total);
+        });
+
+        const tick = (time) => {
+            const delta = lastTimeRef.current ? time - lastTimeRef.current : 0;
+            lastTimeRef.current = time;
+            if (!isPaused.current) {
+                localCols.forEach((col, ci) => {
+                    const total = col.length * stride;
+                    if (!total) return;
+                    const speedMult = columnSpeeds?.[ci] ?? (ci % 2 === 0 ? 1 : 0.7);
+                    const vel = sign * baseVelocity * speedMult * (delta / 1000) * 60;
+                    yRefs.current[ci] = wrapV(yRefs.current[ci] + vel, total);
+                    const track = trackRefs.current[ci];
+                    if (track) gsap.set(track, { y: yRefs.current[ci] });
+                });
+            }
+            rafRef.current = requestAnimationFrame(tick);
+        };
+        rafRef.current = requestAnimationFrame(tick);
+        return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+    }, [columns, direction, baseVelocity, gap, cardHeight, items, columnSpeeds]);
+
+    const perspectiveStyle = is3D
+        ? { transform: "perspective(1000px) rotateX(22deg) rotateZ(-18deg) scale(1.15)", transformOrigin: "50% 45%" }
+        : {};
+
+    return (
+        <div className="relative overflow-hidden select-none"
+            style={is3D ? { height } : {
+                height,
+                WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
+                maskImage: "linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)",
+            }}
+            onMouseEnter={() => { if (pauseOnHover) isPaused.current = true; }}
+            onMouseLeave={() => { if (pauseOnHover) isPaused.current = false; }}
+        >
+            <div style={{ display: "flex", gap: columnGap, ...perspectiveStyle }}>
+                {cols.map((col, ci) => {
+                    const stride = cardHeight + gap;
+                    const totalH = col.length * stride;
+                    const display = [...col, ...col, ...col];
+                    return (
+                        <div key={ci} className="relative overflow-hidden shrink-0" style={{ width: cardWidth, height }}>
+                            <div ref={(el) => { trackRefs.current[ci] = el; }}
+                                className="absolute top-0 left-0 flex flex-col"
+                                style={{ height: totalH * 3, gap }}>
+                                {display.map((item, i) => (
+                                    <TestimonialCard key={i} item={item} width={cardWidth}
+                                        height={cardHeight} gradientIndex={i % col.length} />
+                                ))}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
+export default TestimonialMarquee;`;
+
+const testimonialMarqueeTheory: IProjectTheory = {
+    overview:
+        "The Testimonial Marquee renders multiple independent vertical tracks, each driven by a single shared requestAnimationFrame loop. Items are distributed round-robin across columns and tripled for a seamless infinite wrap. The is3D prop applies a CSS perspective transform to the whole grid, creating a tilted card-wall effect.",
+    steps: [
+        {
+            title: "1. Round-robin column distribution",
+            content:
+                "Items are split into N columns using `items.filter((_, i) => i % columns === ci)`. This ensures cards are spread evenly and each column has a unique subset. Columns are then tripled ([...col, ...col, ...col]) so the track is always 3× the visible height, giving the modulo-wrap seamless looping room.",
+        },
+        {
+            title: "2. Shared RAF loop, independent y offsets",
+            content:
+                "One requestAnimationFrame loop iterates over all columns each tick. Each column's `yRef` is updated independently with its own speed multiplier (`columnSpeeds[ci]`), then written to the DOM via `gsap.set(track, { y })`. Using gsap.set avoids GSAP tweening overhead — it's a single synchronous style write per column per frame.",
+        },
+        {
+            title: "3. Modulo wrap for infinite scroll",
+            content:
+                "`wrapV(val, total) = ((val % total) + total) % total - total` always returns a value in the range [-total, 0]. As y decreases past -total it jumps back near 0 — but because the track repeats the same items at that position, the transition is invisible. No sentinel elements or position resets are needed.",
+        },
+        {
+            title: "4. CSS 3D perspective tilt (is3D)",
+            content:
+                "When `is3D={true}`, the flex container holding all columns receives `transform: perspective(1000px) rotateX(22deg) rotateZ(-18deg) scale(1.15)`. The browser projects every card in 3D space — cards further from the viewer appear smaller and higher, cards closer appear larger and lower, creating the angled card-wall illusion with no extra JS.",
+        },
+        {
+            title: "5. Edge fading with CSS mask-image",
+            content:
+                "In flat mode, the outer wrapper gets `mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)`. This makes cards fade in at the top and fade out at the bottom, hiding the hard clip and reinforcing the illusion of infinite depth. In 3D mode the mask is omitted as the perspective itself creates natural edge attenuation.",
+        },
+    ],
+};
+
+// ─── Project 6 ────────────────────────────────────────────────────────────────
+
+const screenshotMarqueeCode = `"use client";
+import gsap from "gsap";
+import Image from "next/image";
+import { useEffect, useRef } from "react";
+
+const wrapV = (val, total) => ((val % total) + total) % total - total;
+
+const ScreenshotMarquee = ({
+    items, columns = 4, direction = "up", columnDirections,
+    baseVelocity = 1, is3D = false, tiltDirection = "left",
+    gap = 16, cardHeight = 280, cardWidth = 220, columnGap = 16,
+    className = "h-screen w-full", pauseOnHover = false,
+    columnSpeeds, vignette = true,
+}) => {
+    const cols = Array.from({ length: columns }, (_, ci) => items.filter((_, i) => i % columns === ci));
+    const trackRefs = useRef([]);
+    const yRefs = useRef(Array(columns).fill(0));
+    const isPaused = useRef(false);
+    const rafRef = useRef(null);
+    const lastTimeRef = useRef(null);
+
+    useEffect(() => {
+        const stride = cardHeight + gap;
+        const localCols = Array.from({ length: columns }, (_, ci) => items.filter((_, i) => i % columns === ci));
+        localCols.forEach((col, ci) => {
+            const total = col.length * stride;
+            if (total) yRefs.current[ci] = wrapV(-(ci * stride * 1.5), total);
+        });
+        const tick = (time) => {
+            const delta = lastTimeRef.current ? time - lastTimeRef.current : 0;
+            lastTimeRef.current = time;
+            if (!isPaused.current) {
+                localCols.forEach((col, ci) => {
+                    const total = col.length * stride;
+                    if (!total) return;
+                    const colDir = columnDirections?.[ci] ?? direction;
+                    const sign = colDir === "up" ? -1 : 1;
+                    const speedMult = columnSpeeds?.[ci] ?? (ci % 2 === 0 ? 1 : 0.72);
+                    const vel = sign * baseVelocity * speedMult * (delta / 1000) * 60;
+                    yRefs.current[ci] = wrapV(yRefs.current[ci] + vel, total);
+                    const track = trackRefs.current[ci];
+                    if (track) gsap.set(track, { y: yRefs.current[ci] });
+                });
+            }
+            rafRef.current = requestAnimationFrame(tick);
+        };
+        rafRef.current = requestAnimationFrame(tick);
+        return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+    }, [columns, direction, columnDirections, baseVelocity, gap, cardHeight, items, columnSpeeds]);
+
+    const rotateZ = tiltDirection === "left" ? "-18deg" : "18deg";
+    const perspectiveStyle = is3D
+        ? { transform: \`perspective(900px) rotateX(24deg) rotateZ(\${rotateZ}) scale(1.2)\`, transformOrigin: "50% 48%" }
+        : {};
+    const maskStyle = !is3D
+        ? { WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%)", maskImage: "linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%)" }
+        : {};
+
+    return (
+        <div className={\`relative overflow-hidden select-none \${className}\`} style={maskStyle}
+            onMouseEnter={() => { if (pauseOnHover) isPaused.current = true; }}
+            onMouseLeave={() => { if (pauseOnHover) isPaused.current = false; }}>
+            <div className="flex h-full w-full" style={{ gap: columnGap, ...perspectiveStyle }}>
+                {cols.map((col, ci) => {
+                    const stride = cardHeight + gap;
+                    const totalH = col.length * stride;
+                    const display = [...col, ...col, ...col];
+                    return (
+                        <div key={ci} className="relative overflow-hidden shrink-0 h-full" style={{ width: cardWidth }}>
+                            <div ref={(el) => { trackRefs.current[ci] = el; }}
+                                className="absolute top-0 left-0 flex flex-col" style={{ height: totalH * 3, gap }}>
+                                {display.map((src, i) => (
+                                    <div key={i} className="shrink-0 rounded-2xl overflow-hidden border border-white/10 shadow-xl"
+                                        style={{ width: cardWidth, height: cardHeight }}>
+                                        <Image src={src} alt="" width={cardWidth} height={cardHeight}
+                                            className="object-cover object-top w-full h-full" draggable={false} />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+            {is3D && vignette && (
+                <div className="absolute inset-0 pointer-events-none"
+                    style={{ background: "radial-gradient(ellipse 80% 70% at 50% 50%, transparent 30%, rgba(0,0,0,0.65) 100%)" }} />
+            )}
+        </div>
+    );
+};
+
+export default ScreenshotMarquee;`;
+
+const screenshotMarqueeTheory: IProjectTheory = {
+    overview:
+        "ScreenshotMarquee renders screenshot images in independently animated vertical columns driven by one shared requestAnimationFrame loop. A CSS perspective transform on the grid container creates a dramatic isometric card-wall effect with no external plugin.",
+    steps: [
+        {
+            title: "1. Round-robin column distribution",
+            content:
+                "Images are split into N columns via `items.filter((_, i) => i % columns === ci)`. Each column receives a unique subset of images, then triples them ([...col, ...col, ...col]) so the track is always 3× taller than the visible area — giving the modulo-wrap seamless room to jump without a visible flash.",
+        },
+        {
+            title: "2. Per-column direction & speed",
+            content:
+                "`columnDirections[ci]` overrides the global `direction` for each column independently. Similarly `columnSpeeds[ci]` multiplies the base velocity per column. This lets alternating up/down columns and speed variation run from a single prop array with zero extra state.",
+        },
+        {
+            title: "3. Infinite wrap with modulo",
+            content:
+                "`wrapV(val, total) = ((val % total) + total) % total - total` constrains y to the range [-total, 0]. As y decreases past -total it instantly resets near 0 — but since items repeat at that position in the tripled track, no jump is visible. No sentinel elements or JS position checks are needed.",
+        },
+        {
+            title: "4. CSS 3D isometric perspective (is3D)",
+            content:
+                "The flex container gets `transform: perspective(900px) rotateX(24deg) rotateZ(±18deg) scale(1.2)`. The browser projects each card column through the same vanishing point, producing the isometric card-wall look. `tiltDirection` flips the rotateZ sign between left-leaning and right-leaning variants.",
+        },
+        {
+            title: "5. Vignette & edge masking",
+            content:
+                "In 3D mode a `radial-gradient` overlay div darkens the corners, softening the hard clip boundary. In flat mode a CSS `mask-image: linear-gradient` fades the top and bottom edges, maintaining the illusion that columns scroll in from infinite depth. Both techniques are pure CSS — zero extra JS.",
+        },
+    ],
+};
+
 // ─── Exported data ─────────────────────────────────────────────────────────────
 
 export const projectsData: IProject[] = [
@@ -565,7 +845,7 @@ export const projectsData: IProject[] = [
             "A pure CSS + React expanding gallery where hovering a column stretches it out while the others shrink. Clicking locks the expansion in place. Fully responsive — on mobile it switches to a vertical stack with tap-to-expand behaviour. Overlay titles and descriptions slide up smoothly on the active panel.",
         thumbnail: "/assets/images/projectimgs/expending_gallery.png",
         tags: ["React", "Tailwind CSS", "CSS Transitions", "Responsive"],
-        year: 2025,
+        year: 2026,
         component: "expanding-gallery",
         code: expandingGalleryCode,
         theory: expandingGalleryTheory,
@@ -580,7 +860,7 @@ export const projectsData: IProject[] = [
             "Built with GSAP ticker and manual scroll tracking. Each row starts narrow and expands to full width as it scrolls into view, creating a cinematic reveal effect. The layout dynamically splits any number of projects into two alternating lanes so every project acts as a focal centre exactly once.",
         thumbnail: "/assets/images/projectimgs/grid_scale.png",
         tags: ["GSAP", "React", "Scroll Animation", "Grid Layout"],
-        year: 2025,
+        year: 2026,
         component: "grid-scale",
         code: gridScaleCode,
         theory: gridScaleTheory,
@@ -595,7 +875,7 @@ export const projectsData: IProject[] = [
             "Each card tilts along both axes as the cursor moves over it, using GSAP to smoothly interpolate rotateX and rotateY. On mouse leave an elastic spring easing bounces it back to flat. Child elements sit at different Z depths (preserve-3d) to create a parallax pop-out. The cursor glow uses gsap.set to avoid gradient interpolation colour artifacts.",
         thumbnail: "/assets/images/projectimgs/tilt_card.png",
         tags: ["GSAP", "React", "3D CSS", "preserve-3d"],
-        year: 2025,
+        year: 2026,
         component: "tilt-card",
         code: tiltCardCode,
         theory: tiltCardTheory,
@@ -610,10 +890,40 @@ export const projectsData: IProject[] = [
             "Built from scratch using a GSAP-powered requestAnimationFrame loop with no ScrollTrigger plugin. Supports four play modes — always-on, scroll-driven, hover-pause, and draggable — that can be combined freely. Scroll-up automatically reverses direction (opt-out via scrollReverse={false}). itemWidth, gap, and opacity are fully prop-controlled. A ribbon variant clamps instead of wrapping for a non-looping scroll-reveal feel.",
         thumbnail: "/assets/images/image1.png",
         tags: ["GSAP", "React", "RAF Loop", "Scroll-driven", "Drag & Inertia"],
-        year: 2025,
+        year: 2026,
         component: "animated-marquee",
         code: animatedMarqueeCode,
         theory: animatedMarqueeTheory,
+    },
+    {
+        id: 5,
+        slug: "testimonial-marquee",
+        title: "Testimonial Marquee",
+        description:
+            "A multi-column vertical testimonial ticker with a switchable 3D perspective tilt, per-column speed control, and a seamless RAF infinite loop.",
+        longDescription:
+            "Each column is an independently animated vertical track driven by a shared requestAnimationFrame loop. Items are distributed round-robin across columns and tripled for seamless wrapping. The optional is3D prop applies a CSS perspective(1000px) rotateX rotateZ transform to the whole grid, creating the illusion of an angled card wall. Column speeds can be tuned individually with columnSpeeds[]. A CSS mask-image fades the top and bottom edges in flat mode.",
+        thumbnail: "/assets/images/image1.png",
+        tags: ["GSAP", "React", "3D CSS", "RAF Loop", "Vertical Scroll"],
+        year: 2026,
+        component: "testimonial-marquee",
+        code: testimonialMarqueeCode,
+        theory: testimonialMarqueeTheory,
+    },
+    {
+        id: 6,
+        slug: "screenshot-marquee",
+        title: "Screenshot Marquee",
+        description:
+            "A multi-column vertical screenshot ticker with a switchable isometric 3D perspective, per-column direction & speed control, and a vignette overlay.",
+        longDescription:
+            "Images are distributed round-robin across N columns, each driven by a single shared requestAnimationFrame loop. The optional is3D prop applies perspective(900px) rotateX rotateZ to the flex container, creating a dramatic isometric card-wall with no plugin. tiltDirection flips the lean left or right. columnDirections lets each column scroll independently up or down. A radial-gradient vignette softens the 3D clip edges in 3D mode; a CSS mask-image fades top/bottom in flat mode.",
+        thumbnail: "/assets/images/web_templet1.png",
+        tags: ["GSAP", "React", "3D CSS", "RAF Loop", "Vertical Scroll", "Images"],
+        year: 2026,
+        component: "screenshot-marquee",
+        code: screenshotMarqueeCode,
+        theory: screenshotMarqueeTheory,
     },
 ];
 
@@ -622,3 +932,14 @@ export const getProjectById = (id: number): IProject | undefined =>
 
 export const getProjectBySlug = (slug: string): IProject | undefined =>
     projectsData.find((p) => p.slug === slug);
+
+
+
+
+
+
+
+
+
+
+

@@ -120,6 +120,9 @@ const ProjectGridScaleAnimation = () => {
                                     className="w-full h-full object-cover"
                                     src={project.imageUrl}
                                     alt={project.title}
+                                    fetchPriority="high"
+                                    sizes="(max-width: 768px) 80vw, 50vw"
+                                    priority
                                 />
                             </div>
                             <div className="project-info flex justify-between py-1">

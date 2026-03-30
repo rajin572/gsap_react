@@ -2,7 +2,10 @@ import Practice from "@/component/Home/GSAPPractice";
 import ParallaxMarquee from "@/component/ui/animation/components/AnimatedMarque";
 import Container from "@/component/ui/Container";
 import { AllImages } from "../../../public/assets/AllImages";
-
+import HorizontalScroll from "@/component/ui/animation/components/Horizontalscroll";
+import Banner from "@/component/Home/Banner";
+import ProjectExpandingGallery from "@/component/ui/animation/components/ProjectExpandingGallery";
+import ProjectGridScaleAnimation from "@/component/ui/animation/components/ProjectGridScaleAnimation";
 
 const images = [
   AllImages?.image1.src,
@@ -14,50 +17,82 @@ const images = [
   AllImages?.image7.src,
 ];
 
+const textRow1 = [
+  { text: "GSAP", mod: "" as const },
+  { text: "✦", mod: "sep" as const },
+  { text: "CREATIVE", mod: "--accent" as const },
+  { text: "✦", mod: "sep" as const },
+  { text: "FRONTEND", mod: "--outline" as const },
+  { text: "✦", mod: "sep" as const },
+  { text: "SCROLL", mod: "" as const },
+  { text: "✦", mod: "sep" as const },
+  { text: "VELOCITY", mod: "--accent" as const },
+  { text: "✦", mod: "sep" as const },
+  { text: "ANIMATION", mod: "--outline" as const },
+  { text: "✦", mod: "sep" as const },
+];
+
+const textRow2 = [
+  { text: "MOTION", mod: "" as const },
+  { text: "✦", mod: "sep" as const },
+  { text: "WEB", mod: "--outline" as const },
+  { text: "✦", mod: "sep" as const },
+  { text: "STUDIO", mod: "--accent" as const },
+  { text: "✦", mod: "sep" as const },
+  { text: "TICKER", mod: "" as const },
+  { text: "✦", mod: "sep" as const },
+  { text: "MARQUEE", mod: "--accent" as const },
+  { text: "✦", mod: "sep" as const },
+  { text: "INFINITE", mod: "--outline" as const },
+  { text: "✦", mod: "sep" as const },
+];
+
+const textRow3 = [
+  { text: "TRIGGER", mod: "" as const },
+  { text: "✦", mod: "sep" as const },
+  { text: "STAGGER", mod: "" as const },
+  { text: "✦", mod: "sep" as const },
+  { text: "TIMELINE", mod: "--accent" as const },
+  { text: "✦", mod: "sep" as const },
+  { text: "LOOP", mod: "--outline" as const },
+  { text: "✦", mod: "sep" as const },
+  { text: "EASING", mod: "" as const },
+  { text: "✦", mod: "sep" as const },
+  { text: "TWEEN", mod: "--accent" as const },
+  { text: "✦", mod: "sep" as const },
+];
+
 const page = () => {
   return (
     <div>
-      <div className="h-screen bg-zinc-700 w-full" data-cursor="animated_circle" />
 
-      <Container className="py-20 space-y-16">
-
-        {/* 1. Default — always playing, moves left */}
-        <section>
-          <p className="text-white/40 text-xs mb-3 uppercase tracking-widest">Default (auto play)</p>
-          <ParallaxMarquee items={images} direction={1} baseVelocity={5.5} scrollReverse={false} />
-        </section>
-
-        {/* 2. Scroll-driven — paused until scrolling; reverses on scroll-up */}
-        <section>
-          <p className="text-white/40 text-xs mb-3 uppercase tracking-widest">Scroll to play</p>
-          <ParallaxMarquee items={images} direction={1} baseVelocity={4} playMode="scroll" />
-        </section>
-
-        {/* 3. Hover-pause — plays normally, freezes on hover */}
-        <section>
-          <p className="text-white/40 text-xs mb-3 uppercase tracking-widest">Hover to pause</p>
-          <ParallaxMarquee items={images} direction={-1} baseVelocity={3} playMode="hover-pause" />
-        </section>
-
-        {/* 4. Draggable — grab and fling */}
-        <section>
-          <p className="text-white/40 text-xs mb-3 uppercase tracking-widest">Draggable</p>
-          <ParallaxMarquee items={images} direction={1} baseVelocity={2} draggable />
-        </section>
+      <Banner />
 
 
-        {/* 6. Stacked rows — opposite directions for a classic marquee look */}
-        <section>
-          <p className="text-white/40 text-xs mb-3 uppercase tracking-widest">Stacked rows</p>
-          <div className="space-y-4">
-            <ParallaxMarquee items={images} direction={1} baseVelocity={2} />
-            <ParallaxMarquee items={images} direction={-1} baseVelocity={2} />
-          </div>
-        </section>
 
-        <Practice />
+      <section className="my-10">
 
-      </Container>
+        <div className="space-y-10">
+          <ParallaxMarquee items={images} direction={1} baseVelocity={2} scrollBoost />
+
+          <section>
+            <div className="space-y-2">
+              <ParallaxMarquee items={textRow1} direction={1} baseVelocity={1.5} itemWidth={210} gap={0} textSize="text-4xl" scrollBoost />
+              <ParallaxMarquee items={textRow2} direction={-1} baseVelocity={1.5} itemWidth={210} gap={0} textSize="text-4xl" scrollBoost />
+              <ParallaxMarquee items={textRow3} direction={1} baseVelocity={1.5} itemWidth={210} gap={0} textSize="text-4xl" scrollBoost />
+            </div>
+          </section>
+          <ParallaxMarquee items={images} direction={-1} baseVelocity={1.5} scrollBoost />
+        </div>
+      </section>
+      <ProjectGridScaleAnimation />
+      <ProjectExpandingGallery />
+
+
+      <HorizontalScroll />
+      <Practice />
+
+      {/* </Container> */}
     </div>
   );
 };

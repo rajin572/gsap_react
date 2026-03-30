@@ -79,6 +79,8 @@ const ProjectExpandingGallery = () => {
                                 src={item.src}
                                 alt={item.alt}
                                 fill
+                                fetchPriority="high"
+                                priority
                                 sizes="(max-width: 768px) 100vw, 20vw"
                                 className="object-cover object-center rounded-3xl transition-transform duration-800 ease-in-out group-hover:scale-110"
                             />

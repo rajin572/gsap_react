@@ -24,6 +24,10 @@ import image18 from "./images/image18.png";
 import image19 from "./images/image19.png";
 import image20 from "./images/image20.png";
 
+import web_templet1 from "./images/web_templet1.png";
+import web_templet2 from "./images/web_templet2.png";
+import web_templet3 from "./images/web_templet3.png";
+
 import playstore from "./icons/playstore.png";
 import appleStore from "./icons/appleStore.png";
 import google from "./icons/google.png";
@@ -54,6 +58,10 @@ export const AllImages = {
   image18,
   image19,
   image20,
+
+  web_templet1,
+  web_templet2,
+  web_templet3,
 };
 
 export const AllIcons = {
