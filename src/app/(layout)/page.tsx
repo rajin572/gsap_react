@@ -70,20 +70,22 @@ const page = () => {
 
 
 
-      <section className="my-10">
+      <section className="my-10 relative" >
 
         <div className="space-y-10">
           <ParallaxMarquee items={images} direction={1} baseVelocity={2} scrollBoost />
 
           <section>
             <div className="space-y-2">
-              <ParallaxMarquee items={textRow1} direction={1} baseVelocity={1.5} itemWidth={210} gap={0} textSize="text-4xl" scrollBoost />
-              <ParallaxMarquee items={textRow2} direction={-1} baseVelocity={1.5} itemWidth={210} gap={0} textSize="text-4xl" scrollBoost />
-              <ParallaxMarquee items={textRow3} direction={1} baseVelocity={1.5} itemWidth={210} gap={0} textSize="text-4xl" scrollBoost />
+              <ParallaxMarquee items={textRow1} direction={1} baseVelocity={1.5} itemWidth={210} gap={0} textSize="text-4xl" scrollBoost draggable playMode={"hover-pause"} />
+              <ParallaxMarquee items={textRow2} direction={-1} baseVelocity={1.5} itemWidth={210} gap={0} textSize="text-4xl" scrollBoost draggable playMode={"hover-pause"} />
+              <ParallaxMarquee items={textRow3} direction={1} baseVelocity={1.5} itemWidth={210} gap={0} textSize="text-4xl" scrollBoost draggable playMode={"hover-pause"} />
             </div>
           </section>
           <ParallaxMarquee items={images} direction={-1} baseVelocity={1.5} scrollBoost />
         </div>
+        <div className="from-background pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r"></div>
+        <div className="from-background pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l"></div>
       </section>
       <ProjectGridScaleAnimation />
       <ProjectExpandingGallery />

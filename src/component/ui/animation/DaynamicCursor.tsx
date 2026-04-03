@@ -5,6 +5,7 @@ import CircularBadge from "@/component/Home/CircleBadge";
 
 const DaynamicCursor = () => {
     const cursorRef = useRef<HTMLDivElement>(null);
+    const ringRef = useRef<HTMLDivElement>(null);
     const dotRef = useRef<HTMLDivElement>(null);
     const labelRef = useRef<HTMLParagraphElement>(null);
     const badgeRef = useRef<HTMLDivElement>(null);
@@ -35,11 +36,15 @@ const DaynamicCursor = () => {
         switch (type) {
             case "textview":
                 setBlend(true);
+                gsap.to(ringRef.current, { border: "none", overwrite: "auto" });
+
                 gsap.to(cursorRef.current, { scale: 10, duration: 0.5, ease: "power3", overwrite: "auto" });
                 break;
 
             case "view-card":
                 setLabel(label);
+                gsap.to(ringRef.current, { border: "none", overwrite: "auto" });
+
                 gsap.to(cursorRef.current, { scale: 7, duration: 0.5, ease: "power3", overwrite: "auto" });
                 gsap.to(labelRef.current, { opacity: 1, scale: 0.15, duration: 0 });
                 break;
@@ -48,19 +53,11 @@ const DaynamicCursor = () => {
                 gsap.to(cursorRef.current, { opacity: 0, duration: 0.2, overwrite: "auto" });
                 break;
 
-            case "link":
-                gsap.to(cursorRef.current, {
-                    borderColor: "rgba(255,255,255,0.5)",
-                    backgroundColor: "rgba(255,255,255,0.1)",
-                    scale: 6,
-                    duration: 0,
-                    overwrite: "auto",
-                });
-                break;
-
             case "animated_circle":
+                gsap.to(ringRef.current, { border: "none", overwrite: "auto" });
                 gsap.to(dotRef.current, { opacity: 0, scale: 0, duration: 0, overwrite: "auto" });
-                gsap.to(badgeRef.current, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.7)", overwrite: "auto" });
+                gsap.to(badgeRef.current, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.7)", overwrite: "auto" });
+
                 break;
 
             default:
@@ -76,29 +73,23 @@ const DaynamicCursor = () => {
         switch (type) {
             case "textview":
                 setBlend(false);
+                gsap.to(ringRef.current, { border: "1px solid rgba(255,255,255,0.5)", overwrite: "auto" });
                 break;
 
             case "view-card":
                 setLabel("");
                 gsap.to(labelRef.current, { opacity: 0, scale: 0, duration: 0 });
+                gsap.to(ringRef.current, { border: "1px solid rgba(255,255,255,0.5)", overwrite: "auto" });
                 break;
 
             case "hide":
                 gsap.to(cursorRef.current, { opacity: 1, duration: 0.2 });
                 break;
 
-            case "link":
-                gsap.to(cursorRef.current, {
-                    borderColor: "transparent",
-                    backgroundColor: "rgba(255,255,255,1)",
-                    scale: 1,
-                    duration: 0,
-                });
-                break;
-
             case "animated_circle":
-                gsap.to(badgeRef.current, { opacity: 0, scale: 0, duration: 0.2, overwrite: "auto" });
+                gsap.to(badgeRef.current, { opacity: 0, scale: 0, duration: 0.5, overwrite: "auto" });
                 gsap.to(dotRef.current, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.7)", overwrite: "auto" });
+                gsap.to(ringRef.current, { border: "1px solid rgba(255,255,255,0.5)", overwrite: "auto" });
                 return; // skip the generic scale reset below
         }
 
@@ -112,11 +103,11 @@ const DaynamicCursor = () => {
         gsap.set(cursorRef.current, { xPercent: -50, yPercent: -50 });
         gsap.set(badgeRef.current, { xPercent: -50, yPercent: -50, opacity: 0, scale: 0 });
 
-        const xTo = gsap.quickTo(cursorRef.current, "x", { duration: 0.2, ease: "power3" });
-        const yTo = gsap.quickTo(cursorRef.current, "y", { duration: 0.2, ease: "power3" });
+        const xTo = gsap.quickTo(cursorRef.current, "x", { duration: 1, ease: "back.out(1.4)" });
+        const yTo = gsap.quickTo(cursorRef.current, "y", { duration: 1, ease: "back.out(1.4)" });
 
-        const badgeXTo = gsap.quickTo(badgeRef.current, "x", { duration: 0.2, ease: "power3" });
-        const badgeYTo = gsap.quickTo(badgeRef.current, "y", { duration: 0.2, ease: "power3" });
+        const badgeXTo = gsap.quickTo(badgeRef.current, "x", { duration: 1, ease: "back.out(1.4)" });
+        const badgeYTo = gsap.quickTo(badgeRef.current, "y", { duration: 1, ease: "back.out(1.4)" });
 
         // Mouse move
         const onMove = (e: PointerEvent) => {
@@ -173,13 +164,14 @@ const DaynamicCursor = () => {
             {/* Default dot cursor */}
             <div
                 ref={cursorRef}
-                className="fixed top-0 left-0 size-3.5 rounded-full bg-white pointer-events-none z-9999 flex items-center justify-center"
+                className="fixed top-0 left-0 size-7 rounded-full bg-transparent pointer-events-none z-9999 flex items-center justify-center"
             >
-                <div ref={dotRef} className="size-full rounded-full bg-white flex items-center justify-center">
-                    <p
-                        ref={labelRef}
-                        className="opacity-0 text-xs px-3 leading-snug whitespace-nowrap text-black"
-                    />
+                <div ref={ringRef} className="size-full rounded-full bg-transparent border border-white/50 flex items-center justify-center">
+                    <div ref={dotRef} className="size-2.5 rounded-full bg-white  flex items-center justify-center">
+                        <p
+                            ref={labelRef}
+                            className="opacity-0 text-xs px-3 leading-snug whitespace-nowrap text-black"
+                        /></div>
                 </div>
             </div>
 
