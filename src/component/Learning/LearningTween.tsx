@@ -19,17 +19,21 @@ const TweenInstanceDemo = () => {
 
     const { contextSafe } = useGSAP({ scope: containerRef });
 
-    const play = contextSafe(() => {
-        tweenRef.current?.kill();
-        tweenRef.current = gsap.to(".tween-box", {
+    const createTween = contextSafe(() =>
+        gsap.to(".tween-box", {
             x: 220,
             duration: 2,
             ease: "power2.inOut",
-            paused: false,
             onStart: () => setStatus("running"),
             onComplete: () => setStatus("complete"),
-        });
-    });
+        })
+    );
+    const clearBox = contextSafe(() => gsap.set(".tween-box", { clearProps: "all" }));
+
+    const play = () => {
+        tweenRef.current?.kill();
+        tweenRef.current = createTween() ?? null;
+    };
 
     const pause = () => {
         tweenRef.current?.pause();
@@ -46,16 +50,16 @@ const TweenInstanceDemo = () => {
         setStatus("reversing");
     };
 
-    const restart = contextSafe(() => {
+    const restart = () => {
         tweenRef.current?.restart();
         setStatus("running");
-    });
+    };
 
-    const kill = contextSafe(() => {
+    const kill = () => {
         tweenRef.current?.kill();
-        gsap.set(".tween-box", { clearProps: "all" });
+        clearBox();
         setStatus("killed");
-    });
+    };
 
     const statusColor: Record<string, string> = {
         idle: "text-zinc-400",
@@ -136,22 +140,12 @@ tweenRef.current.time(1.2);`}
 
                 {/* Controls */}
                 <div className="flex gap-2 flex-wrap">
-                    {[
-                        { label: "▶ play", fn: play, cls: "bg-secondary text-black" },
-                        { label: "⏸ pause", fn: pause, cls: "bg-zinc-700 text-white" },
-                        { label: "▷ resume", fn: resume, cls: "bg-zinc-700 text-white" },
-                        { label: "◀ reverse", fn: reverse, cls: "bg-blue-700 text-white" },
-                        { label: "↺ restart", fn: restart, cls: "bg-zinc-700 text-white" },
-                        { label: "✕ kill", fn: kill, cls: "bg-red-700 text-white" },
-                    ].map(({ label, fn, cls }) => (
-                        <button
-                            key={label}
-                            onClick={fn}
-                            className={`px-3 py-1 rounded text-sm font-semibold transition-colors ${cls}`}
-                        >
-                            {label}
-                        </button>
-                    ))}
+                    <button onClick={play}    className="px-3 py-1 rounded text-sm font-semibold transition-colors bg-secondary text-black">▶ play</button>
+                    <button onClick={pause}   className="px-3 py-1 rounded text-sm font-semibold transition-colors bg-zinc-700 text-white">⏸ pause</button>
+                    <button onClick={resume}  className="px-3 py-1 rounded text-sm font-semibold transition-colors bg-zinc-700 text-white">▷ resume</button>
+                    <button onClick={reverse} className="px-3 py-1 rounded text-sm font-semibold transition-colors bg-blue-700 text-white">◀ reverse</button>
+                    <button onClick={restart} className="px-3 py-1 rounded text-sm font-semibold transition-colors bg-zinc-700 text-white">↺ restart</button>
+                    <button onClick={kill}    className="px-3 py-1 rounded text-sm font-semibold transition-colors bg-red-700 text-white">✕ kill</button>
                 </div>
             </div>
         </DemoCard>
@@ -173,11 +167,8 @@ const CallbacksDemo = () => {
 
     const { contextSafe } = useGSAP({ scope: containerRef });
 
-    const play = contextSafe(() => {
-        cbTweenRef.current?.kill();
-        setLog(["— started —"]);
-        setProgress(0);
-        cbTweenRef.current = gsap.fromTo(
+    const createCbTween = contextSafe(() =>
+        gsap.fromTo(
             ".cb-box",
             { x: 0 },
             {
@@ -187,8 +178,8 @@ const CallbacksDemo = () => {
                 repeat: 1,
                 yoyo: true,
                 onStart: () => push("onStart — tween began"),
-                onUpdate: () => {
-                    const p = Math.round((cbTweenRef.current?.progress() ?? 0) * 100);
+                onUpdate: function(this: gsap.core.Tween) {
+                    const p = Math.round(this.progress() * 100);
                     setProgress(p);
                     if (p % 10 === 0) push(`onUpdate — ${p}%`);
                 },
@@ -196,8 +187,15 @@ const CallbacksDemo = () => {
                 onReverseComplete: () => push("onReverseComplete — reversed to start"),
                 onComplete: () => push("onComplete — finished"),
             }
-        );
-    });
+        )
+    );
+
+    const play = () => {
+        cbTweenRef.current?.kill();
+        setLog(["— started —"]);
+        setProgress(0);
+        cbTweenRef.current = createCbTween() ?? null;
+    };
 
     return (
         <DemoCard
@@ -291,23 +289,28 @@ const RepeatYoyoDemo = () => {
 
     const { contextSafe } = useGSAP({ scope: containerRef });
 
-    const play = contextSafe(() => {
-        tweenRef.current?.kill();
-        gsap.set(".ry-box", { clearProps: "all" });
-        tweenRef.current = gsap.to(".ry-box", {
+    const createRyTween = contextSafe(() =>
+        gsap.to(".ry-box", {
             x: 220,
             duration: 0.7,
             ease: "power2.inOut",
             repeat,
             yoyo,
             repeatDelay,
-        });
-    });
+        })
+    );
+    const clearRyBox = contextSafe(() => gsap.set(".ry-box", { clearProps: "all" }));
 
-    const stop = contextSafe(() => {
+    const play = () => {
         tweenRef.current?.kill();
-        gsap.set(".ry-box", { clearProps: "all" });
-    });
+        clearRyBox();
+        tweenRef.current = createRyTween() ?? null;
+    };
+
+    const stop = () => {
+        tweenRef.current?.kill();
+        clearRyBox();
+    };
 
     return (
         <DemoCard
@@ -496,8 +499,6 @@ const ProgressDemo = () => {
     const tweenRef = useRef<gsap.core.Tween | null>(null);
     const [prog, setProg] = useState(0);
 
-    const { contextSafe } = useGSAP({ scope: containerRef });
-
     useGSAP(() => {
         tweenRef.current = gsap.to(".prog-box", {
             x: 220,
@@ -514,10 +515,10 @@ const ProgressDemo = () => {
         tweenRef.current?.progress(val);
     };
 
-    const scrubTime = contextSafe((t: number) => {
+    const scrubTime = (t: number) => {
         tweenRef.current?.time(t);
         setProg(tweenRef.current?.progress() ?? 0);
-    });
+    };
 
     return (
         <DemoCard
