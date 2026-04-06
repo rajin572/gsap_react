@@ -164,6 +164,7 @@ tweenRef.current.time(1.2);`}
 // ─────────────────────────────────────────────
 const CallbacksDemo = () => {
     const containerRef = useRef<HTMLDivElement>(null);
+    const cbTweenRef = useRef<gsap.core.Tween | null>(null);
     const [log, setLog] = useState<string[]>(["— waiting for animation —"]);
     const [progress, setProgress] = useState(0);
 
@@ -173,9 +174,10 @@ const CallbacksDemo = () => {
     const { contextSafe } = useGSAP({ scope: containerRef });
 
     const play = contextSafe(() => {
+        cbTweenRef.current?.kill();
         setLog(["— started —"]);
         setProgress(0);
-        gsap.fromTo(
+        cbTweenRef.current = gsap.fromTo(
             ".cb-box",
             { x: 0 },
             {
@@ -185,11 +187,10 @@ const CallbacksDemo = () => {
                 repeat: 1,
                 yoyo: true,
                 onStart: () => push("onStart — tween began"),
-                onUpdate: function () {
-                    setProgress(Math.round((this as gsap.core.Tween).progress() * 100));
-                    if (Math.round((this as gsap.core.Tween).progress() * 100) % 10 === 0) {
-                        push(`onUpdate — ${Math.round((this as gsap.core.Tween).progress() * 100)}%`);
-                    }
+                onUpdate: () => {
+                    const p = Math.round((cbTweenRef.current?.progress() ?? 0) * 100);
+                    setProgress(p);
+                    if (p % 10 === 0) push(`onUpdate — ${p}%`);
                 },
                 onRepeat: () => push("onRepeat — loop restarted"),
                 onReverseComplete: () => push("onReverseComplete — reversed to start"),
@@ -229,24 +230,24 @@ const CallbacksDemo = () => {
                 "Arrow functions lose the 'this' context — use regular functions when reading this.progress()",
                 "Callbacks aren't cleaned up if you kill() mid-animation — handle manually if needed",
             ]}
-            code={`gsap.to(".box", {
+            code={`const tween = gsap.to(".box", {
   x: 220,
   duration: 2,
   repeat: 1,
   yoyo: true,
 
-  onStart() { console.log("started"); },
+  onStart: () => console.log("started"),
 
-  onUpdate() {
-    // 'this' = the Tween instance
-    console.log("progress:", this.progress());
+  onUpdate: () => {
+    // read progress via the stored ref — avoids 'this' type issues
+    console.log("progress:", tween.progress());
   },
 
-  onRepeat() { console.log("looped"); },
+  onRepeat: () => console.log("looped"),
 
-  onReverseComplete() { console.log("reversed to start"); },
+  onReverseComplete: () => console.log("reversed to start"),
 
-  onComplete() { console.log("done"); },
+  onComplete: () => console.log("done"),
 });`}
         >
             <div ref={containerRef} className="flex flex-col gap-4">
@@ -388,7 +389,7 @@ const RepeatYoyoDemo = () => {
 const OverwriteDemo = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const { contextSafe } = useGSAP({ scope: containerRef });
-    const [mode, setMode] = useState<"none" | "auto" | true>("auto");
+    const [mode, setMode] = useState<false | "auto" | true>("auto");
 
     const spamTweens = contextSafe(() => {
         // Fire 3 conflicting tweens in quick succession
@@ -461,13 +462,13 @@ gsap.to(".box", {
 
                 {/* Mode toggle */}
                 <div className="flex gap-1.5 flex-wrap">
-                    {(["none", "auto", true] as const).map((m) => (
+                    {([false, "auto", true] as const).map((m) => (
                         <button
                             key={String(m)}
                             onClick={() => setMode(m)}
                             className={`px-2.5 py-1 rounded text-[11px] font-mono transition-colors ${mode === m ? "bg-secondary text-black" : "bg-zinc-700 text-zinc-400 hover:bg-zinc-600 hover:text-white"}`}
                         >
-                            overwrite: {m === true ? "true" : `"${m}"`}
+                            overwrite: {m === true ? "true" : m === false ? "false" : `"${m}"`}
                         </button>
                     ))}
                 </div>
