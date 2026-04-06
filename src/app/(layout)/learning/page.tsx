@@ -4,6 +4,7 @@ import LearningGsapFrom from '@/component/Learning/LearningGsapFrom';
 import LearningGsapFromTo from '@/component/Learning/LearningGsapFromTo';
 import LearningGsapSet from '@/component/Learning/LearningGsapSet';
 import LearningAnimatableProperties from '@/component/Learning/LearningAnimatableProperties';
+import LearningTween from '@/component/Learning/LearningTween';
 
 const page = () => {
     return (
@@ -14,6 +15,7 @@ const page = () => {
             <LearningGsapFromTo />
             <LearningGsapSet />
             <LearningAnimatableProperties />
+            <LearningTween />
         </div>
     );
 };
