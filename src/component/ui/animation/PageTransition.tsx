@@ -53,11 +53,11 @@ const PageTransition = ({ children }: { children: React.ReactNode }) => {
                 className="h-screen w-full fixed overflow-hidden z-999999! "
             >
                 <div className="h-full w-full flex">
-                    <div className="stairing h-full w-1/5 bg-[#C7EA46]"></div>
-                    <div className="stairing h-full w-1/5 bg-[#C7EA46]"></div>
-                    <div className="stairing h-full w-1/5 bg-[#C7EA46]"></div>
-                    <div className="stairing h-full w-1/5 bg-[#C7EA46]"></div>
-                    <div className="stairing h-full w-1/5 bg-[#C7EA46]"></div>
+                    <div className="stairing h-full w-1/5 bg-secondary"></div>
+                    <div className="stairing h-full w-1/5 bg-secondary"></div>
+                    <div className="stairing h-full w-1/5 bg-secondary"></div>
+                    <div className="stairing h-full w-1/5 bg-secondary"></div>
+                    <div className="stairing h-full w-1/5 bg-secondary"></div>
                 </div>
             </div>
             <div ref={childRef}>{children}</div>
