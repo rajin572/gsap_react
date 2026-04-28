@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
+import Link from "next/link";
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 const IMAGES = [
     "https://bzm-graphics-2026.vercel.app/portfolio/bb-mascara-01.png",
@@ -20,52 +22,54 @@ export default function HorizontalScroll() {
     const sectionRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        const section = sectionRef.current;
-        const container = containerRef.current;
-        if (!section || !container) return;
+    useGSAP(
+        () => {
+            const section = sectionRef.current;
+            const container = containerRef.current;
+            if (!section || !container) return;
 
-        const cards = gsap.utils.toArray<HTMLElement>(".scroll-card");
+            const cards = gsap.utils.toArray<HTMLElement>(".scroll-card");
 
-        // totalScroll: push until last card fully exits left side of screen
-        const totalScroll = container.scrollWidth - window.innerWidth;
+            // totalScroll: push until last card fully exits left side of screen
+            const totalScroll = container.scrollWidth - window.innerWidth;
+            // const totalScroll = container.scrollWidth - (window.innerWidth - container.offsetWidth);
 
-        const scrollTrack = gsap.to(container, {
-            x: -1 * totalScroll,
-            duration: totalScroll,
-            ease: "none",
-            scrollTrigger: {
-                trigger: section,
-                start: "top top",
-                end: () => `+=${totalScroll}`,
-                scrub: true,
-                pin: true,
-                anticipatePin: 1,
-            },
-        });
+            const scrollTrack = gsap.to(container, {
+                x: -totalScroll,
+                duration: totalScroll,
+                ease: "none",
+                scrollTrigger: {
+                    trigger: section,
+                    start: "top top",
+                    end: () => `+=${totalScroll}`,
+                    scrub: true,
+                    pin: true,
+                    anticipatePin: 1,
+                },
+            });
 
-        cards.forEach((card) => {
-            gsap.fromTo(
-                card,
-                { opacity: 0.7 },
-                {
-                    opacity: 1,
-                    ease: "power2.out",
-                    scrollTrigger: {
-                        trigger: card,
-                        start: "left 95%",
-                        end: "center 80%",
-                        scrub: true,
-                        containerAnimation: scrollTrack,
-                    },
-                }
-            );
-        });
-
-        return () => {
-            ScrollTrigger.getAll().forEach((t) => t.kill());
-        };
-    }, []);
+            cards.forEach((card) => {
+                gsap.fromTo(
+                    card,
+                    { opacity: 0.7, y: "50%", scale: 0.8 },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        ease: "power2.out",
+                        scrollTrigger: {
+                            trigger: card,
+                            start: "left 95%",
+                            end: "center 90%",
+                            scrub: true,
+                            containerAnimation: scrollTrack,
+                        },
+                    }
+                );
+            });
+        },
+        { scope: sectionRef }
+    );
 
     return (
         <section
@@ -79,11 +83,13 @@ export default function HorizontalScroll() {
                 style={{ willChange: "transform" }}
             >
                 {IMAGES.map((src, i) => (
-                    <div
+                    <Link
+                        href={src}
+                        target="_blank"
                         data-cursor-label={`Visit site `}
                         data-cursor="view-card"
                         key={i}
-                        className="scroll-card flex-none w-[50vw] h-full opacity-0"
+                        className="scroll-card flex-none w-screen md:w-[50vw] h-full opacity-0"
                         style={{ willChange: "transform, opacity" }}
                     >
                         <Image
@@ -97,7 +103,7 @@ export default function HorizontalScroll() {
                             fetchPriority="high"
                             priority
                         />
-                    </div>
+                    </Link>
                 ))}
             </div>
         </section>
